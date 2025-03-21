@@ -2,7 +2,7 @@
 
 ### Prerequisite - The `get_fiscal_year()` Function
 
-**Ad-Hoc Request:** Many of the SQL queries in this project rely on a user-defined function called `get_fiscal_year()`. To ensure accurate and consistent reporting, this project utilizes `get_fiscal_year()` function. This function calculates the fiscal year from a given calendar date, based on AtliQ's specific fiscal year definition
+**Ad-Hoc Request:** Many of the SQL queries in this project rely on a user-defined function called `get_fiscal_year()`. To ensure accurate and consistent reporting, this project utilizes `get_fiscal_year()` function. This function calculates the fiscal year from a given calendar date, based on AtliQ's specific fiscal year definition.
 
 **SQL Query:**
 
@@ -20,6 +20,14 @@ END
 ### 1. Croma India Product Wise Sales Report
 
 **Ad-Hoc Request:** Generate a report of individual product sales (aggregated on a monthly basis at the product code level) for Croma India customer for FY-2021 to track individual product sales and run further product analytics on it.
+
+The report should have the following fields:
+- Month
+- Product Name
+- Variant
+- Sold Quantity
+- Gross Price Per Item
+- Gross Price Total
 
 **SQL Query:**
 
@@ -48,6 +56,10 @@ LIMIT 1000000;
 
 **Ad-Hoc Request:** Need an aggregate monthly gross sales report for Croma India customer to track how much sales this particular customer is generating for AtliQ and manage our relationships accordingly.
 
+The report should have the following fields:
+- Month
+- Total gross sales amount to Croma India in this month
+
 **SQL Query:**
 
 ```sql
@@ -66,6 +78,10 @@ GROUP BY date;
 
 **Ad-Hoc Request:** Create a stored proc for monthly gross sales report so that a user doesn't have to manually modify the query every time. This stored proc can be run by other users too who have limited access to database and they can generate this report without needing to involve the data analytics team.
 
+The report should have the following columns:
+- Month
+- Total gross sales in that month from a given customer.
+
 **SQL Query:**
 
 ```sql
@@ -78,7 +94,8 @@ s.date,
 SUM(ROUND(s.sold_quantity*g.gross_price, 2)) as monthly_sales
 FROM fact_sales_monthly s
 JOIN fact_gross_price g
-ON g.fiscal_year=get_fiscal_year(s.date) AND g.product_code=s.product_code
+ON g.fiscal_year=get_fiscal_year(s.date)
+AND g.product_code=s.product_code
 WHERE
 FIND_IN_SET(s.customer_code, in_customer_codes) > 0
 GROUP BY s.date
@@ -89,6 +106,13 @@ END
 ### 4. Stored Procedure for Market Badge
 
 **Ad-Hoc Request:** Create a stored procedure that can determine the market badge based on the following logic: If total sold quantity > 5 million that market is considered Gold else it is Silver.
+
+Input:
+- Market
+- Fiscal Year
+
+Output:
+- Market Badge
 
 **SQL Query:**
 
@@ -125,8 +149,6 @@ END
 
 #### 5.1 Creating the `sales_preinv_discount` View
 
-**SQL Query:**
-
 ```sql
 CREATE VIEW sales_preinv_discount AS
 SELECT
@@ -154,60 +176,54 @@ ON pre.customer_code = s.customer_code AND
 pre.fiscal_year=s.fiscal_year;
 ```
 
-#### 5.2 Creating the `sales_postinv_discount` View
+### 6. Top Markets, Products, Customers for a Given Financial Year
 
-**SQL Query:**
+**Ad-Hoc Request:** A report is needed for top markets, products, and customers by net sales for a given financial year.
+
+#### 6.1 Creating Stored Procedure to Get Top n Markets by Net Sales
 
 ```sql
-CREATE VIEW sales_postinv_discount AS
+CREATE PROCEDURE get_top_n_markets_by_net_sales(
+in_fiscal_year INT,
+in_top_n INT
+)
+BEGIN
 SELECT
-s.date, s.fiscal_year,
-s.customer_code, s.market,
-s.product_code, s.product, s.variant,
-s.sold_quantity, s.gross_price_total,
-s.pre_invoice_discount_pct,
-(s.gross_price_total-s.pre_invoice_discount_pct*s.gross_price_total) as net_invoice_sales,
-(po.discounts_pct+po.other_deductions_pct) as post_invoice_discount_pct
-FROM sales_preinv_discount s
-JOIN fact_post_invoice_deductions po
-ON po.customer_code = s.customer_code AND
-po.product_code = s.product_code AND
-po.date = s.date;
+market,
+round(sum(net_sales)/1000000,2) as net_sales_mln
+FROM net_sales
+where fiscal_year=in_fiscal_year
+group by market
+order by net_sales_mln desc
+limit in_top_n;
+END
 ```
 
-#### 5.3 Creating the `net_sales` View
-
-**SQL Query:**
+#### 6.2 Creating Stored Procedure to Get Top n Customers by Net Sales
 
 ```sql
-CREATE VIEW net_sales AS
-SELECT
-*,
-net_invoice_sales*(1-post_invoice_discount_pct) as net_sales
-FROM sales_postinv_discount;
-```
-### 6. Net Sales % Share Global
-
-**Ad-Hoc Request:** Develop a bar chart report to display the top 10 markets in FY-2021, ranked by their percentage contribution to total net sales.
-
-**SQL Query:**
-
-```sql
-WITH cte1 AS (
-SELECT
+CREATE PROCEDURE get_top_n_customers_by_net_sales(
+in_market VARCHAR(45),
+in_fiscal_year INT,
+in_top_n INT
+)
+BEGIN
+select
 customer,
-ROUND(SUM(net_sales)/1000000,2) AS net_sales_mln
-FROM net_sales s
-JOIN dim_customer c
-ON s.customer_code=c.customer_code
-WHERE s.fiscal_year=2021
-GROUP BY customer)
-SELECT
-customer,
-net_sales_mln*100/SUM(net_sales_mln) OVER () AS pct_net_sales
-FROM cte1
-ORDER BY net_sales_mln DESC;
+round(sum(net_sales)/1000000,2) as net_sales_mln
+from net_sales s
+join dim_customer c
+on s.customer_code=c.customer_code
+where
+s.fiscal_year=in_fiscal_year
+and s.market=in_market
+group by customer
+order by net_sales_mln desc
+limit in_top_n;
+END
 ```
+
+---
 ### 7. Net Sales % Share Global
 
 **Ad-Hoc Request:** Develop a bar chart report to display the top 10 markets in FY-2021, ranked by their percentage contribution to total net sales.
