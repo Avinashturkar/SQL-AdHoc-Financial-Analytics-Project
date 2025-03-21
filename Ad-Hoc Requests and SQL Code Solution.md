@@ -149,6 +149,8 @@ END
 
 #### 5.1 Creating the `sales_preinv_discount` View
 
+To simplify calculations and create a reusable object, a view is created that encapsulates the logic for calculating gross sales and applying pre-invoice discounts. This view will be used to create further required views.
+
 ```sql
 CREATE VIEW sales_preinv_discount AS
 SELECT
@@ -178,6 +180,8 @@ pre.fiscal_year=s.fiscal_year;
 
 #### 5.2 Creating the `sales_postinv_discount` View
 
+To extend the previous view to include post-invoice discounts and calculate net invoice sales, a view has been created. This view will be used to create the final view of net_sales.
+
 ```sql
 CREATE VIEW sales_postinv_discount AS
 SELECT *,
@@ -189,6 +193,8 @@ AND sales_preinv_discount.fiscal_year = post.fiscal_year;
 ```
 
 #### 5.3 Creating the `net_sales` View
+
+A final view needs to be created that incorporates all discounts (pre- and post-invoice) to calculate the final net sales amount for use in subsequent reporting queries.
 
 ```sql
 CREATE VIEW net_sales AS
