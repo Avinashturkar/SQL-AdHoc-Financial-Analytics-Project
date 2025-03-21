@@ -61,7 +61,7 @@ Views used:
 
 The following section contains the Ad-Hoc Requests and the SQL code developed for each request.
 
-*See the separate file: [Ad-Hoc Requests and SQL Solutions](Adhoc_Requests_And_SQL_Solutions.md) for a detailed view of the implemented solution.
+See the separate file: [[`Ad-Hoc Requests and SQL Code Solution.md`](https://github.com/Avinashturkar/sql/blob/main/Ad-Hoc%20Requests%20and%20SQL%20Code%20Solution.md)] for a detailed view of the implemented solution.
 
 ## Tools Used
 
