@@ -172,7 +172,7 @@ Several strategies were implemented to optimize the SQL queries for performance,
 
 ## Showcase
 
-* A copy of the project in PPT form can also be viewed: [AtliQ Hardware Financial Analytics Project.pdf]() is available.
+* A copy of the project in PDF form can also be viewed: [AtliQ Hardware SQL AdHoc Financial Analytics.pdf](https://github.com/Avinashturkar/sql/blob/main/SQL%20AdHoc%20Financial%20Analytics.pdf) is available.
 
 ## LinkedIn
 
