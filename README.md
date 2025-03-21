@@ -177,4 +177,4 @@ Several strategies were implemented to optimize the SQL queries for performance,
 
 ## LinkedIn
 
-LinkedIn profile [Here](www.linkedin.com/in/avinashturkar)
+Connect with me on LinkedIn: [www.linkedin.com/in/avinashturkar]
