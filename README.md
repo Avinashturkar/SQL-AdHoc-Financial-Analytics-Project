@@ -15,7 +15,6 @@
 10. [Impact](#impact)
 11. [Performance Improvements](#performance-improvements)
 12. [Showcase](#showcase)
-13. [LinkedIn](#linkedin)
 
 ## Project Overview
 
