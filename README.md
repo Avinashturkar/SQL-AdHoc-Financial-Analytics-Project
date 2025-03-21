@@ -1,4 +1,4 @@
-# AtliQ Hardware Financial Analytics Project
+# AtliQ Hardwares: SQL Ad-Hoc Finance Analytics Project
 
 
 ## Table of Contents
