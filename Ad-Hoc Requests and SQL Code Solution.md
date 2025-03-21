@@ -176,9 +176,37 @@ ON pre.customer_code = s.customer_code AND
 pre.fiscal_year=s.fiscal_year;
 ```
 
+#### 5.2 Creating the `sales_postinv_discount` View
+
+```sql
+CREATE VIEW sales_postinv_discount AS
+SELECT *,
+ROUND(gross_price_total * (1 - pre_invoice_discount_pct / 100), 2) AS net_invoice_sales
+FROM sales_preinv_discount
+JOIN fact_post_invoice_deductions post
+ON sales_preinv_discount.customer_code = post.customer_code
+AND sales_preinv_discount.fiscal_year = post.fiscal_year;
+```
+
+#### 5.3 Creating the `net_sales` View
+
+```sql
+CREATE VIEW net_sales AS
+SELECT *,
+ROUND(net_invoice_sales * (1 - post_invoice_discount_pct / 100), 2) AS net_sales_amount
+FROM sales_postinv_discount;
+```
+
 ### 6. Top Markets, Products, Customers for a Given Financial Year
 
-**Ad-Hoc Request:** A report is needed for top markets, products, and customers by net sales for a given financial year.
+**Ad-Hoc Request:** A report is needed for top markets, products, and customers by net sales for a given financial year so that a user can have a holistic view of financial performance and can take appropriate actions to address any potential issues.
+
+To facilitate reuse and simplify report generation, create stored procedures for each of these reports
+
+- Report for Top Markets.
+- Report for Top Products.
+- Report for Top Customers.
+
 
 #### 6.1 Creating Stored Procedure to Get Top n Markets by Net Sales
 
@@ -250,6 +278,8 @@ ORDER BY net_sales_mln DESC;
 ### 8. Net Sales % Share by Region
 
 **Ad-Hoc Request:** Develop a set of pie charts showing the percentage breakdown of net sales by the top 10 customers within each region (APAC, EU, LATAM, etc.) for FY-2021.
+
+This will enable regional analysis of company's financial performance, focusing on te key contibutors to sales in each region.
 
 **SQL Query:**
 
